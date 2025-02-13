@@ -1,179 +1,115 @@
-"use client";
+import { useState } from "react";
+import { useUser } from "@clerk/nextjs";
+import { useFinancialRecords } from "@/app/contexts/financial-record-context";
 
-import React from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
-import type { FinancialRecord } from "./types";
-import { financialRecordSchema } from "./types";
+const FinancialRecordForm = () => {
+  const [description, setDescription] = useState<string>("");
+  const [amount, setAmount] = useState<string>("");
+  const [category, setCategory] = useState<string>("");
+  const [paymentMethod, setPaymentMethod] = useState<string>("");
+  const { addRecord } = useFinancialRecords();
+  const { user } = useUser();
 
-const FinancialRecordForm: React.FC = () => {
-  const { toast } = useToast();
-  const form = useForm<FinancialRecord>({
-    resolver: zodResolver(financialRecordSchema),
-    defaultValues: {
-      description: "",
-      amount: "",
-      category: "food",
-      paymentMethod: "cash",
-    },
-  });
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
-  const onSubmit = async (data: FinancialRecord) => {
-    try {
-      // Here you would typically make an API call to save the record
-      console.log("Form submitted:", data);
+    const newRecord = {
+      userId: user?.id ?? "",
+      date: new Date(),
+      description: description,
+      amount: parseFloat(amount),
+      category: category,
+      paymentMethod: paymentMethod,
+    };
 
-      toast({
-        title: "Record added successfully!",
-        description: `Added ${data.description} for ${data.amount}`,
-      });
-
-      form.reset();
-    } catch (error) {
-      toast({
-        title: "Error adding record",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
-      console.error("Error submitting form:", error);
-    }
+    addRecord(newRecord);
+    setDescription("");
+    setAmount("");
+    setCategory("");
+    setPaymentMethod("");
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold text-center">
-          Financial Record Form
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter description" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+    <div className="w-full p-6 ">
+      <div className="max-w-4xl mx-auto bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-8">
+        <h2 className="text-3xl font-bold mb-8 text-gray-800 text-center">Add Financial Record</h2>
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Description
+            </label>
+            <input
+              type="text"
+              required
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Enter description"
             />
+          </div>
 
-            <FormField
-              control={form.control}
-              name="amount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Amount</FormLabel>
-                  <FormControl>
-                    <Input type="text" placeholder="Enter amount" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Amount
+            </label>
+            <input
+              type="number"
+              required
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="Enter amount"
             />
+          </div>
 
-            <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="food">Food</SelectItem>
-                      <SelectItem value="rent">Rent</SelectItem>
-                      <SelectItem value="salary">Salary</SelectItem>
-                      <SelectItem value="utilities">Utilities</SelectItem>
-                      <SelectItem value="entertainment">
-                        Entertainment
-                      </SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="paymentMethod"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Payment Method</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select payment method" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="credit-card">Credit Card</SelectItem>
-                      <SelectItem value="cash">Cash</SelectItem>
-                      <SelectItem value="bank-transfer">
-                        Bank Transfer
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={form.formState.isSubmitting}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Category
+            </label>
+            <select
+              required
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
             >
-              {form.formState.isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Adding Record...
-                </>
-              ) : (
-                "Add Record"
-              )}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+              <option value="">Select a Category</option>
+              <option value="Food">Food</option>
+              <option value="Rent">Rent</option>
+              <option value="Salary">Salary</option>
+              <option value="Utilities">Utilities</option>
+              <option value="Entertainment">Entertainment</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Payment Method
+            </label>
+            <select
+              required
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+            >
+              <option value="">Select a Payment Method</option>
+              <option value="Credit Card">Credit Card</option>
+              <option value="Cash">Cash</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+            </select>
+          </div>
+
+          <div className="md:col-span-2">
+            <button
+              type="submit"
+              className="w-full px-6 py-3 text-lg text-white font-medium bg-indigo-500 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+            >
+              Add Record
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };
 

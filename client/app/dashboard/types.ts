@@ -1,4 +1,3 @@
-// types.ts
 import { z } from "zod";
 
 export const financialRecordSchema = z.object({

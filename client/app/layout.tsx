@@ -7,6 +7,7 @@ import {
   SignedOut,
   UserButton,
 } from "@clerk/nextjs";
+import { Providers } from "./provider";
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
@@ -21,21 +22,22 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <html lang="en">
-      <body className="bg-gradient-to-br from-blue-400 via-green-500 to-indigo-600">
-
-          <div className="flex justify-end p-4 mr-4">
-            <SignedOut>
-              <SignUpButton mode="modal" />
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-          </div>
-          <Toaster />
-          {children}
-        </body>
-      </html>
+      <Providers>
+        <html lang="en">
+          <body className="bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-500">
+            <div className="flex justify-end p-4 mr-4">
+              <SignedOut>
+                <SignUpButton mode="modal" />
+              </SignedOut>
+              <SignedIn>
+                <UserButton />
+              </SignedIn>
+            </div>
+            <Toaster />
+            {children}
+          </body>
+        </html>
+      </Providers>
     </ClerkProvider>
   );
 }

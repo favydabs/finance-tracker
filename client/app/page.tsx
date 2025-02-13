@@ -2,6 +2,7 @@
 import { useUser } from "@clerk/nextjs";
 import FinancialRecordForm from "@/app/dashboard/financial-record-form";
 import FinancialRecordList from "./dashboard/financial-record-list";
+
 export default function Home() {
   const { user } = useUser();
 
@@ -17,7 +18,7 @@ export default function Home() {
       <div className=" flex items-center justify-center mt-4 ">
         <FinancialRecordForm />
       </div>
-      <div className="flex justify-center mt-4">
+      <div className="flex justify-center mt-8">
         <FinancialRecordList />
       </div>
     </div>
